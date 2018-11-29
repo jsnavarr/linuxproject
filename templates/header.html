@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Catalog App</title>
+		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='header.css') }}">
+		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='catalog.css') }}">
+	</head>
+	<body>
+		<div class="top_bar">
+			<div id="top_bar_title">
+				<a >Catalog App</a>
+			</div> 
+			{%if 'username' not in session %}
+				<div class="login">
+					<a  href="{{url_for('showLogin')}}" >Login</a>
+				</div>
+			{% else %}
+				<div class="login">
+					<a href="{{url_for('disconnect')}}"> Logout </a>
+				</div>
+				<div class = "signed_as">
+						<a>Signed as: {{session['username']}}</a>
+				</div>
+			{% endif %}
+		</div>
+	</body>
+</html>
