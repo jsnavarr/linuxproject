@@ -1,0 +1,55 @@
+body {
+    margin:0;
+    background: rgba(25, 25, 25, 0.8);
+}
+
+/* This is the to bar with the name of the app and the login button */
+.top_bar {
+    list-style-type: none;
+    width:100%;
+    display: block;
+    position: fixed;
+    top: 0;
+    overflow: hidden;
+    background: darkblue;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 25px;
+    text-align: left;
+}
+
+/* App name */
+.top_bar #top_bar_title {
+    float: left;
+    padding: 5px 50px;
+}
+
+/* This is the login/logout button */
+.top_bar .login {
+    float: right;
+    border-left: 1px solid white;
+    background: maroon;
+    padding: 5px 25px;
+}
+
+/* To show the name user logged in */
+.signed_as {
+    font-size: small;
+    padding-top: 10px;
+    padding-right: 10px;
+    float:right;
+}
+
+.top_bar a {
+    color: white;
+    text-decoration: none;
+}
+
+.top_bar .login:hover {
+    background: limegreen;
+}
+
+.flash {
+    margin-top: 40px;
+    font-family: helvetica;
+    color: white;
+}
