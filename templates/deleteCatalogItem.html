@@ -46,22 +46,24 @@ This code will render a table to delete a catalog item with 1 header and 2 colum
 					</tr>
 					<tr>
 						<td class="item_label">Images:</td>
-							<td>
-								<div>
+							<td class = "image_cell">
 									{% if not imgs %}
 										<figure>
-											<img src="/static/default_img.png" style="width: 50px; height: 50px">
+											<img class="small_image" src="/static/default_img.png">
 										</figure>
 									{% else %}
-										{% for img in imgs %}
-											<figure>
-												<img src="/static/{{img.uuid_prefix}}{{img.name}}" style="width: 50px; height: 50px">
-											</figure>
-										{% endfor %}
-									{% endif %}
-								</div>
+										<figure>
+											<img class="small_image" src="/static/{{imgs[0].uuid_prefix}}{{imgs[0].name}}">
+										</figure>
+										{% if (imgs|length) >1 %}
+											<a class="number_images">
+												{{(imgs|length)-1}}+
+											</a>
+										{% endif %}
+								{% endif %}
 							</td>
-						</tr>
+						</td>
+					</tr>
 					<tr>
 						<td colspan="2">
 							<div class="all_buttons">
