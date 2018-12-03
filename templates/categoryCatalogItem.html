@@ -12,6 +12,17 @@ with 2 headers and 2 colums:
  -->
 {% block content %}
 {% include "header.html" %}
+<div class = 'flash'>
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+		<ul>
+		{% for message in messages %}
+			<li> <strong> {{ message }} </strong> </li>
+		{% endfor %}
+		</ul>
+		{% endif %}
+	{% endwith %}
+</div>
 <div class="categories_data">
 	<div class = "catalog_info">
 		<table>
@@ -33,23 +44,23 @@ with 2 headers and 2 colums:
 				</tr>
 				<tr>
 					<td colspan="2">
-						<div class="all_buttons">
-							<div class="category_buttons">
-								{%if 'username' in session %}
-								<div>
-									<a href="{{url_for('editCategory', category_name = category.name)}}">
-										<button >Edit Category</button>
-									</a>
-									<a href="{{url_for('deleteCategory', category_name = category.name)}}">
-										<button >Delete Category</button>
-									</a>
-									<a href="{{url_for('newCategory')}}">
-										<button >New Category</button>
-									</a>
+						{%if 'username' in session %}
+							<div class="all_buttons">
+								<div class="category_buttons">
+									<div>
+										<a href="{{url_for('editCategory', category_name = category.name)}}">
+											<button >Edit Category</button>
+										</a>
+										<a href="{{url_for('deleteCategory', category_name = category.name)}}">
+											<button >Delete Category</button>
+										</a>
+										<a href="{{url_for('newCategory')}}">
+											<button >New Category</button>
+										</a>
+									</div>
 								</div>
-								{% endif %}
 							</div>
-						</div>
+						{% endif %}
 					</td>
 				</tr>
 				<tr>

@@ -1,0 +1,64 @@
+/* This will let display the image an a number in the same row */
+.image_cell figure, .number_images{
+    display: inline;
+}
+
+/* This is to show an small image when displaying a catalog item */
+.small_image {
+    width: 50px;
+    height: 50px;
+}
+
+/* This is to show a bigger image when displaying images for a catalog item*/
+.big_image {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    margin: 0 auto;
+}
+
+/* This is the number displayed after an image defining how many more images
+    are in this catalog item */
+.number_images {
+    font-size: 45px;
+    font-weight: bolder;
+    background: royalblue;
+    color: azure;
+    text-align: center;
+    vertical-align: bottom
+}
+
+/* Defines the area where the delete button will be located */ 
+.delete_image {
+    padding: 10px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+/* To remove the underline decoration in the link for the delete buton */
+.delete_image a {
+    text-decoration: none;
+}
+
+/* The style for the delete button */
+.delete_image button {
+    text-align: center;
+    color: white;
+    background: darkred;
+    display: flex;
+    margin: 0 auto;
+    border: 2px solid darkgray;
+}
+
+/* The form to upload a file image will be 50% of the screen width */
+.upload_image {
+    width: 50%;
+    margin: 100px auto 20px auto;
+}
+
+/* The area where the file name to be uploaded will be displayed */
+.file_name {
+    width: 80%;
+}
+
+

@@ -2,6 +2,9 @@
 from flask import Flask, render_template, request, redirect, \
     jsonify, url_for, flash, make_response
 from flask import session as login_session
+from flask import send_from_directory
+
+from werkzeug.utils import secure_filename
 
 from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
@@ -9,15 +12,22 @@ from sqlalchemy.orm import sessionmaker
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 
-from models import Base, Category, CatalogItem, User
+from models import Base, Category, CatalogItem, CatalogItemImg, User
 
 import httplib2
 import json
 import requests
 import random
 import string
+import os
+import uuid
+
+UPLOAD_FOLDER = '/vagrant/iCatalogIMG/static'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -34,13 +44,38 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+@app.route('/catalog/item/imgs/JSON')
+# JSON APIs to view all catalog item images
+def catalogItemImgsJSON():
+    imgs = session.query(CatalogItemImg).all()
+    if imgs:
+        return jsonify(catalogItemImgs=[i.serialize for i in imgs])
+    return jsonify(catalogItemImgs=[])
+
+
+@app.route('/catalog/<string:category_name>/<string:item_name>/imgs/JSON')
+# JSON APIs to view catalog item images for specific category and catalog item
+def categoryCatalogItemIdImgJSON(category_name, item_name):
+    category = session.query(Category).filter_by(
+        name=category_name).first()
+    if category:
+        item = session.query(CatalogItem).filter_by(
+            name=item_name).first()
+        if item:
+            imgs = session.query(CatalogItemImg).filter_by(
+                catalogItem_id=item.id).all()
+            if imgs:
+                return jsonify(catalogItemImgs=[i.serialize for i in imgs])
+    return jsonify(catalogItemImgs=[])
+
+
 @app.route('/catalog/item/JSON')
 # JSON APIs to view all catalog items
 def catalogItemsJSON():
     items = session.query(CatalogItem).all()
     if items:
-        return jsonify(categoryItems=[i.serialize for i in items])
-    return jsonify(categoryItems=[])
+        return jsonify(catalogItems=[i.serialize for i in items])
+    return jsonify(catalogItems=[])
 
 
 @app.route('/catalog/<int:category_id>/item/JSON')
@@ -49,8 +84,8 @@ def categoryIdItemJSON(category_id):
     items = session.query(CatalogItem).filter_by(
         category_id=category_id).all()
     if items:
-        return jsonify(categoryItems=[i.serialize for i in items])
-    return jsonify(categoryItems=[])
+        return jsonify(catalogItems=[i.serialize for i in items])
+    return jsonify(catalogItems=[])
 
 
 @app.route('/catalog/<string:category_name>/item/JSON')
@@ -61,8 +96,8 @@ def categoryNameItemJSON(category_name):
         items = session.query(CatalogItem).filter_by(
             category_id=category.id).all()
         if items:
-            return jsonify(categoryItems=[i.serialize for i in items])
-    return jsonify(categoryItems=[])
+            return jsonify(catalogItems=[i.serialize for i in items])
+    return jsonify(catalogItems=[])
 
 
 @app.route('/catalog/<int:category_id>/item/<int:item_id>/JSON')
@@ -73,8 +108,8 @@ def categoryIdItemIdJSON(category_id, item_id):
         item = session.query(CatalogItem).filter_by(
             category_id=category.id).filter_by(id=item_id).first()
         if item:
-            return jsonify(category_Item=item.serialize)
-    return jsonify(category_Item=[])
+            return jsonify(catalog_Item=item.serialize)
+    return jsonify(catalog_Item=[])
 
 
 @app.route('/catalog/<string:category_name>/<string:item_title>/JSON')
@@ -85,8 +120,8 @@ def categoryNameItemNameJSON(category_name, item_title):
         item = session.query(CatalogItem).filter_by(
             category_id=category.id).filter_by(title=item_title).first()
         if item:
-            return jsonify(category_Item=item.serialize)
-    return jsonify(category_Item=[])
+            return jsonify(catalog_Item=item.serialize)
+    return jsonify(catalog_Item=[])
 
 
 @app.route('/catalog/JSON')
@@ -170,10 +205,11 @@ def showCategories():
 @app.route('/catalog/new', methods=['GET', 'POST'])
 # Create a new category
 def newCategory():
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to add a new category you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     if request.method == 'POST':
         # Veriry that category name is not already in database
         name = request.form['name']
@@ -186,18 +222,19 @@ def newCategory():
             session.add(newCategory)
             flash('New Category %s Successfully Created' % newCategory.name)
             session.commit()
-        return redirect(url_for('showCategories'))
     if request.method == 'GET':
         return render_template('newCategory.html')
+    return redirect(url_for('showCategories'))
 
 
 @app.route('/catalog/<category_name>/edit', methods=['GET', 'POST'])
 # Edit a catalog category
 def editCategory(category_name):
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to edit a category you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     # Get the category to be edited
     editedCategory = session.query(Category).filter_by(
         name=category_name).first()
@@ -236,10 +273,11 @@ def editCategory(category_name):
 @app.route('/catalog/<category_name>/delete', methods=['GET', 'POST'])
 # Delete a category and its catalog items
 def deleteCategory(category_name):
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to delete a category you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     # Get the category to be deleted
     categoryToDelete = session.query(Category).filter_by(
         name=category_name).first()
@@ -250,8 +288,8 @@ def deleteCategory(category_name):
                 session.delete(categoryToDelete)
                 session.query(CatalogItem).filter_by(
                     category_id=categoryToDelete.id).delete()
-                flash('%s Successfully Deleted' % categoryToDelete.name)
                 session.commit()
+                flash('%s Successfully Deleted' % categoryToDelete.name)
             if request.method == 'GET':
                 return render_template(
                     'deleteCategory.html',
@@ -273,10 +311,11 @@ def showCatalogItemDetails(category_name, item_title):
         # Look for the item title in above category
         item = session.query(CatalogItem).filter_by(
             category_id=category.id).filter_by(title=item_title).first()
+        imgs = session.query(CatalogItemImg).filter_by(catalogItem_id=item.id).all()
         categories = session.query(Category)
         return render_template(
             'catalogItem.html', category_name=category_name,
-            item=item, categories=categories)
+            item=item, categories=categories, imgs=imgs)
     else:
         flash('Category was found...')
         return redirect(url_for('showCategories'))
@@ -299,10 +338,11 @@ def showCatalogItem(category_name):
 @app.route('/catalog/item/new', methods=['GET', 'POST'])
 # Create a new catalog item
 def newCatalogItem():
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to add a new catalog item you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     categories = session.query(Category)
     if categories:
         if request.method == 'POST':
@@ -315,6 +355,9 @@ def newCatalogItem():
                         title=request.form['title']).first():
                     flash('Catalog item description already exist in this \
                         category.. record not updated')
+                    return redirect(url_for(
+                        'showCatalogItem',
+                        category_name=category.name))
                 else:
                     newItem = CatalogItem(
                         title=request.form['title'],
@@ -326,6 +369,10 @@ def newCatalogItem():
                     flash(
                         'New Catalog Item: %s Successfully Created'
                         % (newItem.title))
+                    return redirect(url_for(
+                        'showCatalogItemDetails',
+                        category_name=category.name,
+                        item_title=newItem.title))
             else:
                 flash('Category was not found...')
         if request.method == 'GET':
@@ -342,10 +389,11 @@ def newCatalogItem():
     methods=['GET', 'POST'])
 # Edit a catalog item
 def editCatalogItem(category_name, item_title):
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to edit a catalog item you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     # Get the catalog item to be edited
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -357,6 +405,7 @@ def editCatalogItem(category_name, item_title):
             if categories:
                 # If user is the owner then he is allowed to edit this item
                 if editedItem.user_id == login_session['user_id']:
+                    imgs = session.query(CatalogItemImg).filter_by(catalogItem_id=editedItem.id).all()
                     if request.method == 'POST':
                         if request.form['category']:
                             category = session.query(Category).filter_by(
@@ -368,6 +417,9 @@ def editCatalogItem(category_name, item_title):
                                 title=request.form['title']).first():
                             flash('Catalog item title already exist in this \
                                 category.. record not updated')
+                            return redirect(url_for(
+                                'showCatalogItem',
+                                category_name=category.name))    
                         else:
                             if request.form['title']:
                                 editedItem.title = request.form['title']
@@ -378,20 +430,26 @@ def editCatalogItem(category_name, item_title):
                                 editedItem.category_id = category.id
                             session.add(editedItem)
                             session.commit()
-                            flash('Catalog Item Successfully Edited')
+                            flash('Catalog Item %s Successfully Edited'
+                                % (editedItem.title))
+                            return redirect(url_for(
+                                'showCatalogItemDetails',
+                                category_name=category.name,
+                                item_title=editedItem.title))
                     if request.method == 'GET':
                         return render_template(
                             'editCatalogItem.html',
                             category_name=category_name,
                             item_title=item_title,
                             item=editedItem,
-                            categories=categories)
+                            categories=categories,
+                            imgs = imgs
+                            )
                 # User is not the owner so it is not allowed
                 # to make any changes
                 else:
                     flash('You can\'t edit this item because \
                         you are not the owner')
-                    return redirect(url_for('showCategories'))
             else:
                 flash('No categories found...')
         else:
@@ -406,10 +464,11 @@ def editCatalogItem(category_name, item_title):
     methods=['GET', 'POST'])
 # Delete a catalog item
 def deleteCatalogItem(category_name, item_title):
-    # If user has not logged in then it will redirected to log in
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
     if 'username' not in login_session:
         flash('In order to delete a catalog item you must log in')
-        return redirect('/login')
+        return redirect(url_for('showCategories'))
     # Get the catalog item to be deleted
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -421,16 +480,24 @@ def deleteCatalogItem(category_name, item_title):
             if categories:
                 # If user is the owner then he is allowed to delete this item
                 if itemToDelete.user_id == login_session['user_id']:
+                    imgs = session.query(CatalogItemImg).filter_by(
+                        catalogItem_id=itemToDelete.id).all()
                     if request.method == 'POST':
-                        category_id = itemToDelete.category_id
                         session.delete(itemToDelete)
+                        session.query(CatalogItemImg).filter_by(
+                            catalogItem_id=itemToDelete.id).delete()
                         session.commit()
-                        flash('Category Item Successfully Deleted')
+                        flash('Catalog Item and images Successfully Deleted')
+                        return redirect(url_for(
+                            'showCatalogItem',
+                            category_name=category.name))
                     if request.method == 'GET':
                         return render_template(
                             'deleteCatalogItem.html',
                             category_name=category_name,
-                            item=itemToDelete, categories=categories)
+                            item=itemToDelete, 
+                            categories=categories,
+                            imgs=imgs)
                 # User is not the owner so it is not allowed
                 # to make any changes
                 else:
@@ -440,6 +507,183 @@ def deleteCatalogItem(category_name, item_title):
                 flash('No categories found...')
         else:
             flash('Item to delete was not found...')
+    else:
+        flash('Category was not found...')
+    return redirect(url_for('showCategories'))
+
+
+@app.route('/uploads/<filename>')
+# Used to upload a catalog item image to the specific directory
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
+
+def allowed_file(filename):
+# Used to check if the extension of the file name for the catalog item image
+# is in the list of allowed extensions
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route(
+    '/catalog/<category_name>/<item_title>/img',
+    methods=['GET', 'POST'])
+# Display catalog item images
+def catalogItemImage(category_name, item_title):
+    # Get the category
+    category = session.query(Category).filter_by(name=category_name).first()
+    if category:
+        # Get the catalog item
+        item = session.query(CatalogItem).filter_by(
+            category_id=category.id).filter_by(title=item_title).first()
+        if item:
+            # Get the images for this catalog item
+            imgs = session.query(CatalogItemImg).filter_by(
+                catalogItem_id=item.id).all()
+            if imgs:
+                return render_template(
+                    'catalogItemImage.html',
+                    category_name=category_name,
+                    item_title=item_title,
+                    imgs=imgs)
+            else:
+                flash('Images were not found...')
+        else:
+            flash('Catalog item was not found...')
+    else:
+        flash('Category was not found...')
+    return redirect(url_for('showCategories'))
+
+
+@app.route(
+    '/catalog/<category_name>/<item_title>/img/new',
+    methods=['GET', 'POST'])
+# Add a new catalog item image
+def newCatalogItemImage(category_name, item_title):
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
+    if 'username' not in login_session:
+        flash('In order to add a catalog item image you must log in')
+        return redirect(url_for('showCategories'))
+    # Get the category
+    category = session.query(Category).filter_by(name=category_name).first()
+    if category:
+        # Get the catalog item
+        item = session.query(CatalogItem).filter_by(
+            category_id=category.id).filter_by(title=item_title).first()
+        if item:
+            if item.user_id == login_session['user_id']:
+                if request.method == 'POST':
+                    if 'file' not in request.files:
+                        flash('No file part for catalog item image')
+                    else:
+                        file = request.files['file']
+                        # if user does not select file, browser also
+                        # submit a empty part without filename
+                        if file.filename == '':
+                            flash('No selected file for catalog item image')
+                        elif file and allowed_file(file.filename):
+                            if session.query(CatalogItemImg).filter_by(
+                                    catalogItem_id=item.id).filter_by(
+                                    name=file.filename).first():
+                                flash('Catalog item image name already exist\
+                                    in this catalog item.. chose a different\
+                                    file')
+                            else:
+                                filename = secure_filename(file.filename)
+                                app.config['UPLOAD_FOLDER']
+                                fileNamePrefix = str(uuid.uuid4())
+                                file.save(os.path.join(
+                                    app.config['UPLOAD_FOLDER'], 
+                                    fileNamePrefix+filename))
+                                newImage = CatalogItemImg(
+                                    name=file.filename,
+                                    uuid_prefix=fileNamePrefix,
+                                    catalogItem_id=item.id,
+                                    user_id=item.user_id
+                                )
+                                session.add(newImage)
+                                session.commit()
+                                flash(
+                                    'New Catalog Item Image: %s Successfully\
+                                    Created' % (newImage.name))
+                                categories = session.query(Category)
+                                imgs = session.query(CatalogItemImg).filter_by(
+                                    catalogItem_id=item.id).all()
+                        else:
+                            flash('File extension is in the list of allowed\
+                                extensions: '+', '.join(ALLOWED_EXTENSIONS))
+                    return redirect(url_for(
+                        'catalogItemImage', 
+                        category_name=category_name,
+                        item_title=item_title))
+                if request.method == 'GET':
+                    return render_template(
+                        'newCatalogItemImage.html',
+                        category_name=category_name,
+                        item_title=item_title)
+            # User is not the owner so it is not allowed
+            # to make any changes
+            else:
+                flash('You can\'t add images to this catalog item because \
+                    you are not the owner')
+        else:
+            flash('Catalog item to edit was not found...')
+    else:
+        flash('Category was not found...')
+    return redirect(url_for('showCategories'))
+
+
+@app.route(
+    '/catalog/<category_name>/<item_title>/<img_name>/delete',
+    methods=['GET', 'POST'])
+# Delete a catalog item image
+def deleteCatalogItemImage(category_name, item_title, img_name):
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
+    if 'username' not in login_session:
+        flash('In order to delete a catalog item image you must log in')
+        return redirect(url_for('showCategories'))
+    # Get the category
+    category = session.query(Category).filter_by(name=category_name).first()
+    if category:
+        # Get the catalog item
+        item = session.query(CatalogItem).filter_by(
+            category_id=category.id).filter_by(title=item_title).first()
+        if item:
+            # Get the image for this catalog item
+            img = session.query(CatalogItemImg).filter_by(
+                catalogItem_id=item.id).filter_by(name=img_name).first()
+            if img:
+                if item.user_id == login_session['user_id']:
+                    if request.method == 'POST':
+                        fileToRemove = os.path.join(app.config['UPLOAD_FOLDER'], img.uuid_prefix+img.name)
+                        os.remove(fileToRemove)
+                        session.delete(img)
+                        session.commit()
+                        flash(
+                            'Catalog Item Image: %s Successfully deleted'
+                                % (img.name))
+                        return redirect(url_for(
+                            'showCatalogItemDetails', category_name=category_name,
+                            item_title=item_title))
+                    if request.method == 'GET':
+                        return render_template(
+                            'deleteCatalogItemImage.html',
+                            category_name=category_name,
+                            item_title=item_title,
+                            img_name=img_name,
+                            img=img)
+                # User is not the owner so it is not allowed
+                # to make any changes
+                else:
+                    flash('You can\'t add images to this catalog item because \
+                        you are not the owner')
+            else:
+                flash('Image was not found...')
+        else:
+            flash('Catalog item to edit was not found...')
     else:
         flash('Category was not found...')
     return redirect(url_for('showCategories'))
@@ -720,3 +964,5 @@ if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
     app.run(host='0.0.0.0', port=8000)
+    
+

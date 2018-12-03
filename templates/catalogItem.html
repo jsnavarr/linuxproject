@@ -12,11 +12,22 @@ This code will render a table to display a catalog item with 1 header and 2 colu
  -->
  {% block content %}
  {% include "header.html" %}
+ <div class = 'flash'>
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+		<ul>
+		{% for message in messages %}
+			<li> <strong> {{ message }} </strong> </li>
+		{% endfor %}
+		</ul>
+		{% endif %}
+	{% endwith %}
+</div>
 <div class="categories_data">
 	<div class = "catalog_info">
 		<table>
 			<thead>
-				<th id="cat_title" colspan="2">Catalog Item Details</th>
+				<th id="cat_title" colspan=2>Catalog Item Details</th>
 			</head>
 			<tbody>
 				<tr>
@@ -25,7 +36,7 @@ This code will render a table to display a catalog item with 1 header and 2 colu
 				</tr>
 				<tr>
 					<td class="item_label">Description:</td>
-					<td><textarea name="description" rows="6" disabled>{{ item.description }}</textarea></td>
+					<td><textarea name="description" rows="4" disabled>{{ item.description }}</textarea></td>
 				</tr>
 				<tr>
 					<td class="item_label">Category:</td>
@@ -44,25 +55,52 @@ This code will render a table to display a catalog item with 1 header and 2 colu
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2">
-						<div class="all_buttons">
-							<div class="category_buttons">
-								{%if 'username' in session %}
-								<a href="{{url_for('editCatalogItem', category_name = category_name, item_title = item.title)}}">
-									<button >Edit</button>
-								</a>
-								<a href="{{url_for('deleteCatalogItem', category_name = category_name, item_title = item.title)}}">
-									<button >Delete</button>
-								</a>	
-								<a href="{{url_for('newCatalogItem')}}">
-									<button >New</button>
-								</a>
-								{% endif %}
-								<a href="{{url_for('showCategories')}}">
-									<button>Cancel</button>
-								</a>
+					<td class="item_label">Images:</td>
+					<td class = "image_cell">
+					{% if not imgs %}
+						<figure>
+							<img class="small_image" src="/static/default_img.png">
+						</figure>
+					{% else %}
+						<figure>
+							<a href="{{url_for('catalogItemImage', category_name=category_name, item_title=item.title)}}">
+								<img class="small_image" src="/static/{{imgs[0].uuid_prefix}}{{imgs[0].name}}"></a>
+						</figure>
+					{% endif %}
+					{% if imgs|length >1 %}
+						<a class="number_images" >{{imgs|length-1}}+</a>
+					{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td colspan=2>
+						{%if 'username' in session%}
+							<div class="all_buttons">
+								<div class="category_buttons">
+									<a href="{{url_for('editCatalogItem', category_name = category_name, item_title = item.title)}}">
+										<button >Edit</button>
+									</a>
+									<a href="{{url_for('deleteCatalogItem', category_name = category_name, item_title = item.title)}}">
+										<button >Delete</button>
+									</a>	
+									<a href="{{url_for('newCatalogItem')}}">
+										<button >New</button>
+									</a>
+									<a href="{{url_for('showCategories')}}">
+										<button>Cancel</button>
+									</a>
+								</div>
 							</div>
-						</div>
+						{% endif %}
+						{%if 'username' not in session%}
+							<div class="all_buttons">
+								<div class="category_buttons">
+									<a href="{{url_for('showCategories')}}">
+										<button>Cancel</button>
+									</a>
+								</div>
+							</div>
+						{% endif %}
 					</td>
 				</tr>
 			</tbody>

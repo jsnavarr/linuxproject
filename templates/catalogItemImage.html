@@ -1,0 +1,72 @@
+{% block content %}
+{% include "header.html" %}
+<div class = 'flash'>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+</div>
+<div class="categories_data">
+    <div class = "catalog_info">
+        <table>
+            <thead>
+                <th id="cat_title" colspan=3>Images for Category: {{category_name}} and Catalog Item: {{item_title}}</th>
+            </head>
+            <tbody>
+                {% if not imgs %}
+                    <tr>
+                        <td class = "big_image_cell">
+                            <figure>
+                                <img class="big_image" src="/static/default_img.png">
+                            </figure>
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if imgs %}
+                        {% for img in imgs %}
+                            {% if (loop.index0) % 3 == 0 %}
+                                <tr>
+                            {% endif %}
+                            <td class = "big_image_cell">
+                                <figure>
+                                    <img class="big_image" src="/static/{{img.uuid_prefix}}{{img.name}}">
+                                </figure>
+                                {%if 'username' in session %}
+                                    <div class="delete_image">
+                                    <a href="{{url_for('deleteCatalogItemImage', category_name=category_name, item_title=item_title, img_name=img.name)}}">
+                                        <button>Delete</button>
+                                    </a>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            {% if (loop.index0 +1) % 3 == 0 %}
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                {% endif %}
+                <tr>
+                    <td colspan=3>
+                        <div class="all_buttons">
+                            <div class="category_buttons">
+                                {%if 'username' in session %}
+                                <a href="{{url_for('newCatalogItemImage', category_name=category_name, item_title=item_title)}}">
+                                        <button>Add New Image</button>
+                                </a>
+                                {% endif %}
+                                <a href = "{{url_for('showCatalogItemDetails', category_name=category_name, item_title=item_title)}}">
+                                    <button>Cancel</button>
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

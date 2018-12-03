@@ -17,7 +17,7 @@ This code will render a table to edit a catalog item with 1 header and 2 colums:
 		<div class = "catalog_info">
 			<table>
 				<thead>
-					<th id="cat_title" colspan="2">Edit Catalog Item</th>
+					<th id="cat_title" colspan=2>Edit Catalog Item</th>
 				</thead>
 				<tbody>
 					<tr>
@@ -45,7 +45,40 @@ This code will render a table to edit a catalog item with 1 header and 2 colums:
 						</td>
 					</tr>
 					<tr>
-						<td colspan="2">
+						<td class="item_label">Images:</td>
+						<td class = "image_cell">
+							{% if not imgs %}
+								{% if 'username' in session %}
+									<figure>
+										<a href="{{url_for('newCatalogItemImage', category_name=category_name, item_title=item.title)}}">
+											<img class="small_image" src="/static/default_img.png"></a>
+									</figure>
+								{% else %}
+									<figure>
+										<img class="small_image" src="/static/default_img.png">
+									</figure>
+								{% endif %}	
+							{% else %}
+								{% if 'username' in session %}
+									<figure>
+										<a href="{{url_for('catalogItemImage', category_name=category_name, item_title=item.title)}}">
+										<img class="small_image" src="/static/{{imgs[0].uuid_prefix}}{{imgs[0].name}}"></a>
+									</figure>
+									{% if (imgs|length) >1 %}
+										<a class="number_images">
+											{{(imgs|length)-1}}+
+										</a>
+									{% endif %}
+								{% else %}
+									<figure>
+										<img class="small_image" src="/static/{{imgs[0].uuid_prefix}}{{imgs[0].name}}">
+									</figure>
+								{% endif %}
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<td colspan=2>
 							<div class="all_buttons">
 								<div class="category_buttons">
 									<input type="submit" value = 'Save'>

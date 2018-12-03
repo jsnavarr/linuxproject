@@ -1,0 +1,48 @@
+{% block content %}
+{% include "header.html" %}
+<div class = 'flash'>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li> <strong> {{ message }} </strong> </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        {% endwith %}
+</div>
+    <form action="{{ url_for('newCatalogItemImage', category_name=category_name, item_title=item_title)}}" method=post enctype=multipart/form-data>
+        <div class="upload_image">
+            <div class = "catalog_info">
+                <table>
+                    <thead>
+                        <th id="cat_title" colspan="2">Add New Image for Catalog Item {{item_title}}?</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <input class="file_name" type=file name=file>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type=submit value=Upload>
+                            </td>
+                            <td>
+                                {%if 'username' in session%}
+                                    <a href = "{{url_for('editCatalogItem', category_name=category_name, item_title=item_title)}}">
+                                        <span><input type="button" value="Cancel"></span>
+                                    </a>
+                                {% else %}
+                                    <a href = "{{url_for('showCatalogItemDetails', category_name=category_name, item_title=item_title)}}">
+                                        <span><input type="button" value="Cancel"></span>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+{% endblock %}

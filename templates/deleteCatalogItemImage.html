@@ -1,0 +1,35 @@
+{% block content %}
+{% include "header.html" %}
+<form action="{{ url_for('deleteCatalogItemImage', category_name = category_name, item_title = item_title, img_name = img_name)}}" method = "post">
+    <div class="categories_data">
+        <div class = "catalog_info">
+            <table>
+                <thead>
+                    <th id="cat_title" colspan="2">Are you sure you want to delete catalog item image {{img_name}}?</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class = "big_image_cell">
+                            <figure>
+                                <img class="big_image" src="/static/{{img.uuid_prefix}}{{img_name}}">
+                            </figure>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="all_buttons">
+                                <div class="category_buttons">
+                                    <input class="delete_data" type="submit" value = 'Delete'>
+                                        <a href = "{{url_for('editCatalogItem', category_name=category_name, item_title=item_title)}}">
+                                            <span><input type="button" value="Cancel"></span>
+                                        </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+	</div>
+</form>
+{% endblock %}
