@@ -24,6 +24,12 @@ To run the program just open a terminal and run: `python catalog.py`
   - **U**pdate: to edit a catalog item (title, description, category)
   - **D**elete: to delete a catalog item
 
+**Images:**
+
+  - **C**reate: to add a new catalog item image
+  - **R**ead: to display all images in a catalog item
+  - **U**pdate: to update a catalog item image
+  - **D**elete: to delete a catalog item image
 
 The application also provides **JSON** endpoints to retrieve information from the database.
 
@@ -31,6 +37,7 @@ The application also provides **JSON** endpoints to retrieve information from th
 
   - `/catalog/JSON` to display all categories
   - `/catalog/<int:category_id>/JSON` to display specific category (`category_id`)
+  - `/catalog/<string:category_name>/JSON` to display specific category (`category_name`)
 
 **Catalog items:**
 
@@ -40,6 +47,11 @@ The application also provides **JSON** endpoints to retrieve information from th
   - `/catalog/<int:category_id>/item/<int:item_id>/JSON` to display specific catalog item (`item_id`) in a category (`category_id`)
   - `/catalog/<string:category_name>/item/<string:item_title>/JSON` to display specific catalog item (`item_title`) in a category (`category_name`)
 
+**Images:**
+
+  - `/catalog/item/imgs/JSON` to display all images 
+  - `/catalog/<string:category_name>/<string:item_name>/imgs/JSON` to display all images in specific item (item_name) and specific category (category_name)
+  
 **Users:**
 
   - `/catalog/user/JSON` to display all users information

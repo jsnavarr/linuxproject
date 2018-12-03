@@ -50,7 +50,7 @@ This code will render a table to edit a catalog item with 1 header and 2 colums:
 							{% if not imgs %}
 								{% if 'username' in session %}
 									<figure>
-										<a href="{{url_for('newCatalogItemImage', category_name=category_name, item_title=item.title)}}">
+										<a title = "Click to add a New image" href="{{url_for('newCatalogItemImage', category_name=category_name, item_title=item.title)}}">
 											<img class="small_image" src="/static/default_img.png"></a>
 									</figure>
 								{% else %}
@@ -61,7 +61,7 @@ This code will render a table to edit a catalog item with 1 header and 2 colums:
 							{% else %}
 								{% if 'username' in session %}
 									<figure>
-										<a href="{{url_for('catalogItemImage', category_name=category_name, item_title=item.title)}}">
+										<a title = "Click to add/delete images" href="{{url_for('catalogItemImage', category_name=category_name, item_title=item.title)}}">
 										<img class="small_image" src="/static/{{imgs[0].uuid_prefix}}{{imgs[0].name}}"></a>
 									</figure>
 									{% if (imgs|length) >1 %}

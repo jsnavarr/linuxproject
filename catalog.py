@@ -592,7 +592,6 @@ def newCatalogItemImage(category_name, item_title):
                                     file')
                             else:
                                 filename = secure_filename(file.filename)
-                                app.config['UPLOAD_FOLDER']
                                 fileNamePrefix = str(uuid.uuid4())
                                 file.save(os.path.join(
                                     app.config['UPLOAD_FOLDER'], 
@@ -612,7 +611,7 @@ def newCatalogItemImage(category_name, item_title):
                                 imgs = session.query(CatalogItemImg).filter_by(
                                     catalogItem_id=item.id).all()
                         else:
-                            flash('File extension is in the list of allowed\
+                            flash('File extension is not in the list of allowed\
                                 extensions: '+', '.join(ALLOWED_EXTENSIONS))
                     return redirect(url_for(
                         'catalogItemImage', 
@@ -628,6 +627,88 @@ def newCatalogItemImage(category_name, item_title):
             else:
                 flash('You can\'t add images to this catalog item because \
                     you are not the owner')
+        else:
+            flash('Catalog item to edit was not found...')
+    else:
+        flash('Category was not found...')
+    return redirect(url_for('showCategories'))
+
+
+@app.route(
+    '/catalog/<category_name>/<item_title>/<img_name>/edit',
+    methods=['GET', 'POST'])
+# Add a new catalog item image
+def editCatalogItemImage(category_name, item_title, img_name):
+    # If user has not logged in then a message will be displayed
+    # asking user to log in
+    if 'username' not in login_session:
+        flash('In order to edit a catalog item image you must log in')
+        return redirect(url_for('showCategories'))
+    # Get the category
+    category = session.query(Category).filter_by(name=category_name).first()
+    if category:
+        # Get the catalog item
+        item = session.query(CatalogItem).filter_by(
+            category_id=category.id).filter_by(title=item_title).first()
+        if item:
+            imgToUpdate = session.query(CatalogItemImg).filter_by(
+                catalogItem_id=item.id).filter_by(
+                    name=img_name).first()
+            if imgToUpdate:
+                if imgToUpdate.user_id == login_session['user_id']:
+                    if request.method == 'POST':
+                        if 'file' not in request.files:
+                            flash('No file part for catalog item image')
+                        else:
+                            file = request.files['file']
+                            # if user does not select file, browser also
+                            # submit a empty part without filename
+                            if file.filename == '':
+                                flash('No selected file for catalog item image')
+                            elif file and allowed_file(file.filename):
+                                if session.query(CatalogItemImg).filter_by(
+                                        catalogItem_id=item.id).filter_by(
+                                        name=file.filename).first():
+                                    flash('Catalog item image name already exist\
+                                        in this catalog item.. chose a different\
+                                        file')
+                                else:
+                                    filename = secure_filename(file.filename)
+                                    fileNamePrefix = str(uuid.uuid4())
+                                    file.save(os.path.join(
+                                        app.config['UPLOAD_FOLDER'], 
+                                        fileNamePrefix+filename))
+                                    fileToRemove = os.path.join(
+                                        app.config['UPLOAD_FOLDER'],
+                                        imgToUpdate.uuid_prefix+imgToUpdate.name)
+                                    os.remove(fileToRemove)
+                                    imgToUpdate.name = filename
+                                    imgToUpdate.uuid_prefix = fileNamePrefix
+                                    session.add(imgToUpdate)
+                                    session.commit()
+                                    flash(
+                                        'Catalog Item Image: %s Successfully\
+                                        Updated' % (imgToUpdate.name))
+                            else:
+                                flash('File extension is not in the list of allowed\
+                                    extensions: '+', '.join(ALLOWED_EXTENSIONS))
+                        return redirect(url_for(
+                            'catalogItemImage', 
+                            category_name=category_name,
+                            item_title=item_title))
+                    if request.method == 'GET':
+                        return render_template(
+                            'editCatalogItemImage.html',
+                            category_name=category_name,
+                            item_title=item_title,
+                            img_name=img_name)
+                # User is not the owner so it is not allowed
+                # to make any changes
+                else:
+                    flash('You can\'t update images on this catalog item\
+                        because you are not the owner')
+            else:
+                flash('Image was not found...')
         else:
             flash('Catalog item to edit was not found...')
     else:

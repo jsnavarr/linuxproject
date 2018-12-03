@@ -28,26 +28,40 @@
     vertical-align: bottom
 }
 
-/* Defines the area where the delete button will be located */ 
-.delete_image {
+/* Defines the area where the edit/delete button will be located */ 
+.delete_image, .edit_image {
     padding: 10px;
+    width: fit-content;
+    margin: 0 auto;
+    display: inline-flex;
+}
+
+/* To remove the underline decoration in the link for the edit/delete buton */
+.delete_image a, .edit_image a {
+    text-decoration: none;
+}
+
+.edit_delete_buttons {
     width: fit-content;
     margin: 0 auto;
 }
 
-/* To remove the underline decoration in the link for the delete buton */
-.delete_image a {
-    text-decoration: none;
+/* The common style for the edit/delete button */
+.delete_image button {
+    text-align: center;
+    border: 2px solid darkgray;
+    margin: 0 auto;
 }
 
 /* The style for the delete button */
 .delete_image button {
-    text-align: center;
     color: white;
     background: darkred;
-    display: flex;
-    margin: 0 auto;
-    border: 2px solid darkgray;
+}
+
+/* The style for the edit button */
+.edit_image button {
+    background: lightgray;
 }
 
 /* The form to upload a file image will be 50% of the screen width */
