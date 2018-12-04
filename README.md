@@ -15,14 +15,14 @@ To run the program just open a terminal and run: `python catalog.py`
   - **C**reate: to add a new category
   - **R**ead: to display all categories
   - **U**pdate: to edit a category (name)
-  - **D**elete: to delete a category
+  - **D**elete: to delete a category with its catalog items and images
 
 **Catalog items:**
 
   - **C**reate: to add a new catalog item
   - **R**ead: to display all catalog items in a category
   - **U**pdate: to edit a catalog item (title, description, category)
-  - **D**elete: to delete a catalog item
+  - **D**elete: to delete a catalog item with its images
 
 **Images:**
 
