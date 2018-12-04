@@ -54,7 +54,7 @@ class CatalogItem(Base):
     category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
-    
+
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
@@ -88,6 +88,7 @@ class CatalogItemImg(Base):
             'user_id': self.user_id,
             'catalogItem_id': self.catalogItem_id,
         }
+
 
 engine = create_engine('sqlite:///catalog.db')
 

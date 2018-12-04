@@ -193,7 +193,8 @@ def showCategories():
     if not session.query(Category).first():
         flash('No categories found .. database empty')
         if 'username' not in login_session:
-            flash('Users can add categories only if logged in .. Please login ')
+            flash('Users can add categories only if logged in .. \
+                Please login ')
     # Categories will be listed on the first column of the table,
     # items will be concatenaded with categories_with_items and listed
     # in the second column
@@ -296,7 +297,9 @@ def deleteCategory(category_name):
                         imgs = session.query(CatalogItemImg).filter_by(
                                 catalogItem_id=i.id).all()
                         for img in imgs:
-                            fileToRemove = os.path.join(app.config['UPLOAD_FOLDER'], img.uuid_prefix+img.name)
+                            fileToRemove = os.path.join(
+                                app.config['UPLOAD_FOLDER'],
+                                img.uuid_prefix+img.name)
                             os.remove(fileToRemove)
                             session.query(CatalogItemImg).filter_by(
                                 catalogItem_id=i.id).delete()
@@ -326,7 +329,8 @@ def showCatalogItemDetails(category_name, item_title):
         # Look for the item title in above category
         item = session.query(CatalogItem).filter_by(
             category_id=category.id).filter_by(title=item_title).first()
-        imgs = session.query(CatalogItemImg).filter_by(catalogItem_id=item.id).all()
+        imgs = session.query(CatalogItemImg).filter_by(
+            catalogItem_id=item.id).all()
         categories = session.query(Category)
         return render_template(
             'catalogItem.html', category_name=category_name,
@@ -420,7 +424,8 @@ def editCatalogItem(category_name, item_title):
             if categories:
                 # If user is the owner then he is allowed to edit this item
                 if editedItem.user_id == login_session['user_id']:
-                    imgs = session.query(CatalogItemImg).filter_by(catalogItem_id=editedItem.id).all()
+                    imgs = session.query(CatalogItemImg).filter_by(
+                        catalogItem_id=editedItem.id).all()
                     if request.method == 'POST':
                         if request.form['category']:
                             category = session.query(Category).filter_by(
@@ -434,7 +439,7 @@ def editCatalogItem(category_name, item_title):
                                 category.. record not updated')
                             return redirect(url_for(
                                 'showCatalogItem',
-                                category_name=category.name))    
+                                category_name=category.name))
                         else:
                             if request.form['title']:
                                 editedItem.title = request.form['title']
@@ -445,7 +450,8 @@ def editCatalogItem(category_name, item_title):
                                 editedItem.category_id = category.id
                             session.add(editedItem)
                             session.commit()
-                            flash('Catalog Item %s Successfully Edited'
+                            flash(
+                                'Catalog Item %s Successfully Edited'
                                 % (editedItem.title))
                             return redirect(url_for(
                                 'showCatalogItemDetails',
@@ -458,8 +464,7 @@ def editCatalogItem(category_name, item_title):
                             item_title=item_title,
                             item=editedItem,
                             categories=categories,
-                            imgs = imgs
-                            )
+                            imgs=imgs)
                 # User is not the owner so it is not allowed
                 # to make any changes
                 else:
@@ -500,7 +505,9 @@ def deleteCatalogItem(category_name, item_title):
                     if request.method == 'POST':
                         # Delete the actual image files
                         for img in imgs:
-                            fileToRemove = os.path.join(app.config['UPLOAD_FOLDER'], img.uuid_prefix+img.name)
+                            fileToRemove = os.path.join(
+                                app.config['UPLOAD_FOLDER'],
+                                img.uuid_prefix+img.name)
                             os.remove(fileToRemove)
                         session.delete(itemToDelete)
                         session.query(CatalogItemImg).filter_by(
@@ -514,7 +521,7 @@ def deleteCatalogItem(category_name, item_title):
                         return render_template(
                             'deleteCatalogItem.html',
                             category_name=category_name,
-                            item=itemToDelete, 
+                            item=itemToDelete,
                             categories=categories,
                             imgs=imgs)
                 # User is not the owner so it is not allowed
@@ -538,9 +545,9 @@ def uploaded_file(filename):
                                filename)
 
 
-def allowed_file(filename):
 # Used to check if the extension of the file name for the catalog item image
 # is in the list of allowed extensions
+def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -613,7 +620,7 @@ def newCatalogItemImage(category_name, item_title):
                                 filename = secure_filename(file.filename)
                                 fileNamePrefix = str(uuid.uuid4())
                                 file.save(os.path.join(
-                                    app.config['UPLOAD_FOLDER'], 
+                                    app.config['UPLOAD_FOLDER'],
                                     fileNamePrefix+filename))
                                 newImage = CatalogItemImg(
                                     name=file.filename,
@@ -630,10 +637,12 @@ def newCatalogItemImage(category_name, item_title):
                                 imgs = session.query(CatalogItemImg).filter_by(
                                     catalogItem_id=item.id).all()
                         else:
-                            flash('File extension is not in the list of allowed\
-                                extensions: '+', '.join(ALLOWED_EXTENSIONS))
+                            flash(
+                                'File extension is not in the list of \
+                                allowed extensions: '
+                                + ', '.join(ALLOWED_EXTENSIONS))
                     return redirect(url_for(
-                        'catalogItemImage', 
+                        'catalogItemImage',
                         category_name=category_name,
                         item_title=item_title))
                 if request.method == 'GET':
@@ -683,23 +692,25 @@ def editCatalogItemImage(category_name, item_title, img_name):
                             # if user does not select file, browser also
                             # submit a empty part without filename
                             if file.filename == '':
-                                flash('No selected file for catalog item image')
+                                flash('No selected file for catalog item \
+                                    image')
                             elif file and allowed_file(file.filename):
                                 if session.query(CatalogItemImg).filter_by(
                                         catalogItem_id=item.id).filter_by(
                                         name=file.filename).first():
-                                    flash('Catalog item image name already exist\
-                                        in this catalog item.. chose a different\
-                                        file')
+                                    flash('Catalog item image name already \
+                                        exist in this catalog item.. chose \
+                                        a different file')
                                 else:
                                     filename = secure_filename(file.filename)
                                     fileNamePrefix = str(uuid.uuid4())
                                     file.save(os.path.join(
-                                        app.config['UPLOAD_FOLDER'], 
+                                        app.config['UPLOAD_FOLDER'],
                                         fileNamePrefix+filename))
                                     fileToRemove = os.path.join(
                                         app.config['UPLOAD_FOLDER'],
-                                        imgToUpdate.uuid_prefix+imgToUpdate.name)
+                                        imgToUpdate.uuid_prefix
+                                        + imgToUpdate.name)
                                     os.remove(fileToRemove)
                                     imgToUpdate.name = filename
                                     imgToUpdate.uuid_prefix = fileNamePrefix
@@ -709,10 +720,12 @@ def editCatalogItemImage(category_name, item_title, img_name):
                                         'Catalog Item Image: %s Successfully\
                                         Updated' % (imgToUpdate.name))
                             else:
-                                flash('File extension is not in the list of allowed\
-                                    extensions: '+', '.join(ALLOWED_EXTENSIONS))
+                                flash(
+                                    'File extension is not in the list of\
+                                    allowed extensions: '
+                                    + ', '.join(ALLOWED_EXTENSIONS))
                         return redirect(url_for(
-                            'catalogItemImage', 
+                            'catalogItemImage',
                             category_name=category_name,
                             item_title=item_title))
                     if request.method == 'GET':
@@ -758,16 +771,19 @@ def deleteCatalogItemImage(category_name, item_title, img_name):
             if img:
                 if item.user_id == login_session['user_id']:
                     if request.method == 'POST':
-                        fileToRemove = os.path.join(app.config['UPLOAD_FOLDER'], img.uuid_prefix+img.name)
+                        fileToRemove = os.path.join(
+                            app.config['UPLOAD_FOLDER'],
+                            img.uuid_prefix+img.name)
                         print fileToRemove
                         os.remove(fileToRemove)
                         session.delete(img)
                         session.commit()
                         flash(
                             'Catalog Item Image: %s Successfully deleted'
-                                % (img.name))
+                            % (img.name))
                         return redirect(url_for(
-                            'showCatalogItemDetails', category_name=category_name,
+                            'showCatalogItemDetails',
+                            category_name=category_name,
                             item_title=item_title))
                     if request.method == 'GET':
                         return render_template(
@@ -1065,5 +1081,3 @@ if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
     app.run(host='0.0.0.0', port=8000)
-    
-
