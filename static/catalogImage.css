@@ -1,9 +1,4 @@
-.table_new_image {
-    height:fit-content;
-    min-height: 100px;
-}
-
-/* Style for the main table */
+/* Style for the main table area */
 .new_image_info {
     margin: 0 auto;
     width: fit-content;
@@ -12,6 +7,12 @@
     font-family: Arial, Helvetica, sans-serif;
     text-align: left;
     background: azure;   
+}
+
+/* Style for the main table */
+.table_new_image {
+    height:fit-content;
+    min-height: 100px;
 }
 
 /* This will let display the image an a number in the same row */
