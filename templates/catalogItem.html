@@ -72,9 +72,10 @@ This code will render a table to display a catalog item with 1 header and 2 colu
 					{% endif %}
 					</td>
 				</tr>
-				<tr>
-					<td colspan=2>
+				<tr class="button_row">
+					
 						{%if 'username' in session%}
+						<td colspan=2>
 							<div class="all_buttons">
 								<div class="category_buttons">
 									<a href="{{url_for('editCatalogItem', category_name = category_name, item_title = item.title)}}">
@@ -91,8 +92,10 @@ This code will render a table to display a catalog item with 1 header and 2 colu
 									</a>
 								</div>
 							</div>
+						</td>
 						{% endif %}
 						{%if 'username' not in session%}
+						<td colspan=2>
 							<div class="all_buttons">
 								<div class="category_buttons">
 									<a href="{{url_for('showCategories')}}">
@@ -100,8 +103,8 @@ This code will render a table to display a catalog item with 1 header and 2 colu
 									</a>
 								</div>
 							</div>
+						</td>
 						{% endif %}
-					</td>
 				</tr>
 			</tbody>
 		</table>

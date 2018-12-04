@@ -1,3 +1,19 @@
+.table_new_image {
+    height:fit-content;
+    min-height: 100px;
+}
+
+/* Style for the main table */
+.new_image_info {
+    margin: 0 auto;
+    width: fit-content;
+    height:fit-content;
+    border: 5px double royalblue;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
+    background: azure;   
+}
+
 /* This will let display the image an a number in the same row */
 .image_cell figure, .number_images{
     display: inline;

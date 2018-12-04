@@ -13,18 +13,18 @@
 </div>
     <form action="{{ url_for('newCatalogItemImage', category_name=category_name, item_title=item_title)}}" method=post enctype=multipart/form-data>
         <div class="upload_image">
-            <div class = "catalog_info">
-                <table>
+            <div class = "new_image_info">
+                <table class="table_new_image">
                     <thead>
                         <th id="cat_title" colspan="2">Add New Image for Catalog Item {{item_title}}?</th>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr class="button_row">
                             <td colspan="2">
                                 <input class="file_name" type=file name=file>
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="button_row">
                             <td>
                                 <input type=submit value=Upload>
                             </td>

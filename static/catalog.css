@@ -8,7 +8,7 @@
 .catalog_info {
     margin: 0 auto;
     width: fit-content;
-    min-height: 150px;
+    min-height: 250px;
     border: 5px double royalblue;
     font-family: Arial, Helvetica, sans-serif;
     text-align: left;
@@ -19,6 +19,7 @@
     and would not match the width of the form containing the buttons */
 table {
     width: 100%;
+    min-height: 350px;
 }
 
 /* One of the headers of the table which could fit the full width or just one
@@ -92,6 +93,11 @@ table {
  .all_buttons {
     width: 100%;
 } 
+
+/* To style one row containing buttons */
+.button_row {
+    height: fit-content;
+}
 
 /* The buttons will be centered */
 .category_buttons {

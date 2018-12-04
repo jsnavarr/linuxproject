@@ -28,33 +28,33 @@
                     </tr>
                 {% endif %}
                 {% if imgs %}
-                        {% for img in imgs %}
-                            {% if (loop.index0) % 3 == 0 %}
-                                <tr>
-                            {% endif %}
-                            <td class = "big_image_cell">
-                                <figure>
-                                    <img class="big_image" src="/static/{{img.uuid_prefix}}{{img.name}}">
-                                </figure>
-                            {%if 'username' in session %}
-                                <div class="edit_delete_buttons">
-                                    <div class="edit_image">
-                                        <a href="{{url_for('editCatalogItemImage', category_name=category_name, item_title=item_title, img_name=img.name)}}">
-                                            <button>Edit</button>
-                                        </a>
-                                    </div>
-                                    <div class="delete_image">
-                                        <a href="{{url_for('deleteCatalogItemImage', category_name=category_name, item_title=item_title, img_name=img.name)}}">
-                                            <button>Delete</button>
-                                        </a>
-                                    </div>
+                    {% for img in imgs %}
+                        {% if (loop.index0) % 3 == 0 %}
+                            <tr>
+                        {% endif %}
+                        <td class = "big_image_cell">
+                            <figure>
+                                <img class="big_image" src="/static/{{img.uuid_prefix}}{{img.name}}">
+                            </figure>
+                        {%if 'username' in session %}
+                            <div class="edit_delete_buttons">
+                                <div class="edit_image">
+                                    <a href="{{url_for('editCatalogItemImage', category_name=category_name, item_title=item_title, img_name=img.name)}}">
+                                        <button>Edit</button>
+                                    </a>
                                 </div>
-                            {% endif %}
-                            </td>
-                            {% if (loop.index0 +1) % 3 == 0 %}
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                                <div class="delete_image">
+                                    <a href="{{url_for('deleteCatalogItemImage', category_name=category_name, item_title=item_title, img_name=img.name)}}">
+                                        <button>Delete</button>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        </td>
+                        {% if (loop.index0 +1) % 3 == 0 %}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
                 <tr>
                     <td colspan=3>
