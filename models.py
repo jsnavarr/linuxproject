@@ -11,7 +11,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    name = Column(String(250))
     email = Column(String(250))
     picture = Column(String(250))
 
@@ -30,7 +30,7 @@ class Category(Base):
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    name = Column(String(250), primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 
@@ -47,7 +47,7 @@ class Category(Base):
 class CatalogItem(Base):
     __tablename__ = 'catalog_item'
 
-    title = Column(String(80), nullable=False)
+    title = Column(String(80), primary_key=True)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
     category_id = Column(Integer, ForeignKey('category.id'))
@@ -71,7 +71,7 @@ class CatalogItemImg(Base):
     __tablename__ = 'image'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(250))
+    name = Column(String(250), primary_key=True)
     uuid_prefix = Column(String(40))
     user_id = Column(Integer, ForeignKey('user.id'))
     catalogItem_id = Column(Integer, ForeignKey('catalog_item.id'))
