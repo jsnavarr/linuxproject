@@ -12,6 +12,8 @@ from sqlalchemy.orm import sessionmaker
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 
+from functools import wraps
+
 from models import Base, Category, CatalogItem, CatalogItemImg, User
 
 import httplib2
@@ -169,6 +171,19 @@ def catalogUserJSON(user_id):
     return jsonify(user=[])
 
 
+# Decorator to be call by each new/edit/delete function to redirect user
+# to log in if it is not logged in
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash('In order to add/edit/delete, you must log in')
+            return redirect(url_for('showCategories'))
+    return decorated_function
+
+
 def getCategories(items):
     # Create an array with category names which will be concatenated to the
     # catalog items listed in the main view
@@ -204,13 +219,9 @@ def showCategories():
 
 
 @app.route('/catalog/new', methods=['GET', 'POST'])
+@login_required
 # Create a new category
 def newCategory():
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to add a new category you must log in')
-        return redirect(url_for('showCategories'))
     if request.method == 'POST':
         # Veriry that category name is not already in database
         name = request.form['name']
@@ -229,13 +240,9 @@ def newCategory():
 
 
 @app.route('/catalog/<category_name>/edit', methods=['GET', 'POST'])
+@login_required
 # Edit a catalog category
 def editCategory(category_name):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to edit a category you must log in')
-        return redirect(url_for('showCategories'))
     # Get the category to be edited
     editedCategory = session.query(Category).filter_by(
         name=category_name).first()
@@ -272,13 +279,9 @@ def editCategory(category_name):
 
 
 @app.route('/catalog/<category_name>/delete', methods=['GET', 'POST'])
+@login_required
 # Delete a category and its catalog items
 def deleteCategory(category_name):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to delete a category you must log in')
-        return redirect(url_for('showCategories'))
     # Get the category to be deleted
     categoryToDelete = session.query(Category).filter_by(
         name=category_name).first()
@@ -355,13 +358,9 @@ def showCatalogItem(category_name):
 
 
 @app.route('/catalog/item/new', methods=['GET', 'POST'])
+@login_required
 # Create a new catalog item
 def newCatalogItem():
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to add a new catalog item you must log in')
-        return redirect(url_for('showCategories'))
     categories = session.query(Category)
     if categories:
         if request.method == 'POST':
@@ -406,13 +405,9 @@ def newCatalogItem():
 @app.route(
     '/catalog/<category_name>/<item_title>/edit',
     methods=['GET', 'POST'])
+@login_required
 # Edit a catalog item
 def editCatalogItem(category_name, item_title):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to edit a catalog item you must log in')
-        return redirect(url_for('showCategories'))
     # Get the catalog item to be edited
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -482,13 +477,9 @@ def editCatalogItem(category_name, item_title):
 @app.route(
     '/catalog/<category_name>/<item_title>/delete',
     methods=['GET', 'POST'])
+@login_required
 # Delete a catalog item
 def deleteCatalogItem(category_name, item_title):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to delete a catalog item you must log in')
-        return redirect(url_for('showCategories'))
     # Get the catalog item to be deleted
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -585,13 +576,9 @@ def catalogItemImage(category_name, item_title):
 @app.route(
     '/catalog/<category_name>/<item_title>/img/new',
     methods=['GET', 'POST'])
+@login_required
 # Add a new catalog item image
 def newCatalogItemImage(category_name, item_title):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to add a catalog item image you must log in')
-        return redirect(url_for('showCategories'))
     # Get the category
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -665,13 +652,9 @@ def newCatalogItemImage(category_name, item_title):
 @app.route(
     '/catalog/<category_name>/<item_title>/<img_name>/edit',
     methods=['GET', 'POST'])
+@login_required
 # Add a new catalog item image
 def editCatalogItemImage(category_name, item_title, img_name):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to edit a catalog item image you must log in')
-        return redirect(url_for('showCategories'))
     # Get the category
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
@@ -751,13 +734,9 @@ def editCatalogItemImage(category_name, item_title, img_name):
 @app.route(
     '/catalog/<category_name>/<item_title>/<img_name>/delete',
     methods=['GET', 'POST'])
+@login_required
 # Delete a catalog item image
 def deleteCatalogItemImage(category_name, item_title, img_name):
-    # If user has not logged in then a message will be displayed
-    # asking user to log in
-    if 'username' not in login_session:
-        flash('In order to delete a catalog item image you must log in')
-        return redirect(url_for('showCategories'))
     # Get the category
     category = session.query(Category).filter_by(name=category_name).first()
     if category:
