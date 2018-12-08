@@ -22,7 +22,7 @@ This code will render a table to create a new catalog item with 1 header and 2 c
                 <tbody>
                     <tr>
                         <td class="item_label">Name:</td>
-                        <td><input class="text_item" type ="text" maxlength="80" name="title" placeholder="Catalog Item Title" required></td>
+                        <td><input pattern="[A-Za-z]" title="Only Characters A-Z and a-z are allowed" class="text_item" type ="text" maxlength="80" name="title" placeholder="Catalog Item Title" required></td>
                     </tr>
                     <tr>
                         <td class="item_label">Description:</td>
