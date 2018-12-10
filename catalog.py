@@ -295,7 +295,7 @@ def deleteCategory(category_name):
                     category_id=categoryToDelete.id).all()
                 if items:
                     # Get the images on each catalog item and delete them
-                    # from the database and the file system
+                    # from the file system
                     for i in items:
                         imgs = session.query(CatalogItemImg).filter_by(
                                 catalogItem_id=i.id).all()
@@ -304,11 +304,7 @@ def deleteCategory(category_name):
                                 app.config['UPLOAD_FOLDER'],
                                 img.uuid_prefix+img.name)
                             os.remove(fileToRemove)
-                            session.query(CatalogItemImg).filter_by(
-                                catalogItem_id=i.id).delete()
                 session.delete(categoryToDelete)
-                session.query(CatalogItem).filter_by(
-                    category_id=categoryToDelete.id).delete()
                 session.commit()
                 flash('%s Successfully Deleted' % categoryToDelete.name)
             if request.method == 'GET':
@@ -501,8 +497,6 @@ def deleteCatalogItem(category_name, item_title):
                                 img.uuid_prefix+img.name)
                             os.remove(fileToRemove)
                         session.delete(itemToDelete)
-                        session.query(CatalogItemImg).filter_by(
-                            catalogItem_id=itemToDelete.id).delete()
                         session.commit()
                         flash('Catalog Item and images Successfully Deleted')
                         return redirect(url_for(
