@@ -193,10 +193,6 @@ def getCategories(items):
     return categories_with_items
 
 
-@app.route('/')
-def hello():
-    return "Hello from PV"
-
 @app.route('/catalog')
 # Show all categories with the latest 10 catalog items added
 def showCategories():
