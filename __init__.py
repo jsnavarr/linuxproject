@@ -24,7 +24,7 @@ import string
 import os
 import uuid
 
-UPLOAD_FOLDER = '/vagrant/iCatalogIMG/static'
+UPLOAD_FOLDER = '/var/www/FlaskApp/FlaskApp/static'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -32,15 +32,13 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+    open('/var/www/FlaskApp/FlaskApp/client_secrets.json', 'r').read())['web']['client_id']
 
 # Reusing the app name from previous project for authentication purposes
 APPLICATION_NAME = "Restaurant Menu Application"
 
 # Connect to Database and create database session
-engine = create_engine(
-    'sqlite:///catalog.db',
-    connect_args={'check_same_thread': False})
+engine = create_engine('postgresql://catalog:password@localhost/catalog')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -196,6 +194,9 @@ def getCategories(items):
 
 
 @app.route('/')
+def hello():
+    return "Hello from PV"
+
 @app.route('/catalog')
 # Show all categories with the latest 10 catalog items added
 def showCategories():
